@@ -27,6 +27,8 @@
 
 #define FLOAT_TO_REALSIZE (4)
 
+#include "tengine_c_api.h"
+
 namespace cv
 {
 namespace dnn
@@ -36,7 +38,7 @@ bool tengine_forward(float *input_, int inch, int group, int in_h, int in_w,
                         float *kernel_,int kernel_s , int kernel_h, int kernel_w,
                         float *teg_bias, int stride_h,int stride_w,
                         int pad_h, int pad_w,  int dilation_h, int dilation_w,
-                        size_t wstep, const std::string padMode) ;
+                        size_t wstep, const std::string padMode, graph_t &graph, float *teg_weight) ;
 }
 }
 #endif /* TENGINE_GRAPH_CONVOLUTION_HPP */

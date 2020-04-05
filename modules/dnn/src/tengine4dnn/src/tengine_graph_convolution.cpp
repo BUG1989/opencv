@@ -284,11 +284,11 @@ bool tengine_forward(float *input_, int inch, int group, int in_h, int in_w,
                         float *kernel_, int kernel_s ,int kernel_h, int kernel_w,
                         float *teg_bias, int stride_h,int stride_w,
                         int pad_h, int pad_w,  int dilation_h, int dilation_w,
-                        size_t wstep,const std::string padMode)
-{
-    graph_t graph = NULL;
-    std::vector<float> teg_weight_vec;
-    float *teg_weight = NULL;
+                        size_t wstep,const std::string padMode, graph_t &graph, float *teg_weight)
+{	
+    // graph_t graph = NULL;
+    // std::vector<float> teg_weight_vec;
+    // float *teg_weight = NULL;
     int kernel_inwh = (inch / group) * kernel_w * kernel_h;
     // Do not using the activation fuse mode, just convolution only.
     int activation = -1;
@@ -307,36 +307,32 @@ bool tengine_forward(float *input_, int inch, int group, int in_h, int in_w,
                dilation_w, dilation_h,
                pad_w,pad_h);*/
 
-        // weight
-        if (kernel_inwh != wstep)
-        {
-            teg_weight_vec.resize(kernel_inwh * outch);
-            teg_weight = &teg_weight_vec[0];
-            for (int i=0; i<outch; i++)
-            {
-                memcpy(teg_weight+i*kernel_inwh, kernel_+i*wstep, kernel_inwh*FLOAT_TO_REALSIZE);
-            }
-        }
-        else
-        {
-            teg_weight = kernel_;
-        }
+        if (graph == NULL)
+		{
+			// weight
+			teg_weight = (float *)malloc(outch * kernel_inwh * FLOAT_TO_REALSIZE);
+			
+			for (int i=0; i<outch; i++)
+			{
+				memcpy(teg_weight+i*kernel_inwh, kernel_+i*wstep, kernel_inwh*FLOAT_TO_REALSIZE);
+			}
 
-        /* initial the resoruce of tengine */
-        init_tengine();
-
-        /* create the convolution graph */
-        graph = create_conv_graph( input_, inch, group, in_h, in_w,
-                                    output_, outch, out_h, out_w,
-                                    kernel_h, kernel_w, stride_h,stride_w,
-                                    pad_h, pad_w, dilation_h, dilation_w, activation,
-                                    teg_weight , teg_bias , padMode);
-
-        /* prerun */
-        if(prerun_graph(graph) < 0)
-        {
-            CV_LOG_WARNING(NULL, "Tengine :prerun_graph failed .");
-            return false ;
+			/* initial the resoruce of tengine */
+			init_tengine();
+			
+			/* create the convolution graph */
+			graph = create_conv_graph( input_, inch, group, in_h, in_w,
+										output_, outch, out_h, out_w,
+										kernel_h, kernel_w, stride_h,stride_w,
+										pad_h, pad_w, dilation_h, dilation_w, activation,
+										teg_weight , teg_bias , padMode);
+										
+			/* prerun */
+			if(prerun_graph(graph) < 0)
+			{
+				CV_LOG_WARNING(NULL, "Tengine :prerun_graph failed .");
+				return false ;
+			}
         }
 
         /* run */
@@ -346,8 +342,8 @@ bool tengine_forward(float *input_, int inch, int group, int in_h, int in_w,
             return false ;
         }
 
-        postrun_graph(graph);
-        destroy_graph(graph);
+        //postrun_graph(graph);
+        //destroy_graph(graph);
     }
     return true ;
 }

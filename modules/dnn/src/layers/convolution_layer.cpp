@@ -243,6 +243,11 @@ public:
     float power;
 #endif
 
+#ifdef HAVE_TENGINE
+	graph_t graph;
+	float *teg_weight;
+#endif
+
 #ifdef HAVE_CUDA
     cuda4dnn::ConvolutionConfiguration::ActivationType cudaActType;
     float cuda_relu_slope, cuda_crelu_floor, cuda_crelu_ceil, cuda_power_exp;
@@ -254,6 +259,11 @@ public:
         newActiv = false;
         activType = OCL4DNN_CONV_FUSED_ACTIV_NONE;
         power = 0.f;
+#endif
+
+#ifdef HAVE_TENGINE
+		graph = NULL;
+		teg_weight = NULL;
 #endif
 
 #ifdef HAVE_CUDA
@@ -1450,7 +1460,7 @@ public:
                                     kernel_, kernel_size.size(), kernel.height, kernel.width,
                                     teg_bias, stride.height, stride.width,
                                     pad.height,  pad.width, dilation.height, dilation.width,
-                                    weightsMat.step1(), padMode);
+                                    weightsMat.step1(), padMode, graph, teg_weight);
         /* activation */
         if((true == tengine_ret) && activ )
         {
