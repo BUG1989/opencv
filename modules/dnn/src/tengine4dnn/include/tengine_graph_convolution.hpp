@@ -26,7 +26,7 @@
 #define TENGINE_GRAPH_CONVOLUTION_HPP
 
 #define FLOAT_TO_REALSIZE (4)
-
+#ifdef HAVE_TENGINE
 #include "tengine_c_api.h"
 
 namespace cv
@@ -41,4 +41,6 @@ bool tengine_forward(float *input_, int inch, int group, int in_h, int in_w,
                         size_t wstep, const std::string padMode, graph_t &graph, float *teg_weight) ;
 }
 }
+#endif
+
 #endif /* TENGINE_GRAPH_CONVOLUTION_HPP */
