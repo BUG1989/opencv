@@ -7,18 +7,6 @@
 
 #include "common.hpp"
 
-#include <sys/time.h>
-
-double get_current_time();
-
-double get_current_time()
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    return tv.tv_sec * 1000.0 + tv.tv_usec / 1000.0;
-}
-
 std::string keys =
     "{ help  h     | | Print help message. }"
     "{ @alias      | | An alias name of model to extract preprocessing parameters from models.yml file. }"
@@ -98,67 +86,19 @@ int main(int argc, char** argv)
     //! [Read and initialize network]
 
     // Create a window
-    // static const std::string kWinName = "Deep learning image classification in OpenCV";
-    // namedWindow(kWinName, WINDOW_NORMAL);
+    static const std::string kWinName = "Deep learning image classification in OpenCV";
+    namedWindow(kWinName, WINDOW_NORMAL);
 
     //! [Open a video file or an image file or a camera stream]
-	/* 
     VideoCapture cap;
     if (parser.has("input"))
         cap.open(parser.get<String>("input"));
     else
         cap.open(0);
     //! [Open a video file or an image file or a camera stream]
-	*/
+
     // Process frames.
     Mat frame, blob;
-    float min_time = 100000000.0;
-    float max_time = 0.0;
-    float cost_time = 0.0;    
-    for (int i=0; i<10; i++)
-    {
-        frame = cv::imread(parser.get<String>("input"), 1);
-
-        //! [Create a 4D blob from a frame]
-        blobFromImage(frame, blob, scale, Size(inpWidth, inpHeight), mean, swapRB, false);
-        //! [Create a 4D blob from a frame]
-        //! [Set input blob]
-        net.setInput(blob);
-        //! [Set input blob]
-        //! [Make forward pass]
-        double start = get_current_time();
-
-        Mat prob = net.forward();
-        //! [Make forward pass]
-
-        double end = get_current_time();
-        cost_time = end - start;
-	printf("cost time = %.3f ms\n", end - start);
-        
-	if(cost_time>max_time)
-		max_time = cost_time;
-	if(cost_time<min_time)
-		min_time = cost_time;
-        //! [Get a class with a highest score]
-        Point classIdPoint;
-        double confidence;
-        minMaxLoc(prob.reshape(1, 1), 0, &confidence, 0, &classIdPoint);
-        int classId = classIdPoint.x;
-        //! [Get a class with a highest score]
-
-        // Put efficiency information.
-        // std::vector<double> layersTimes;
-        // double freq = getTickFrequency() / 1000;
-        // double t = net.getPerfProfile(layersTimes) / freq;
-        // std::string label = format("Inference time: %.2f ms", t);
-        // printf("Inference time: %.2f ms\n", t);
-        // putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));
-
-        printf("%s: %.4f\n", (classes.empty() ? format("Class #%d", classId).c_str():classes[classId].c_str()), confidence);
-    }
-    printf("min time = %.3f ms\n", min_time);
-    printf("max time = %.3f ms\n", max_time);
-	/*
     while (waitKey(1) < 0)
     {
         cap >> frame;
@@ -190,19 +130,16 @@ int main(int argc, char** argv)
         std::vector<double> layersTimes;
         double freq = getTickFrequency() / 1000;
         double t = net.getPerfProfile(layersTimes) / freq;
-        // std::string label = format("Inference time: %.2f ms", t);
-		printf("Inference time: %.2f ms", t);
-        // putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));
-		
-		printf("%s: %.4f", (classes.empty() ? format("Class #%d", classId).c_str():classes[classId].c_str()), confidence);
-        // Print predicted class.
-        // label = format("%s: %.4f", (classes.empty() ? format("Class #%d", classId).c_str() :
-        //                                              classes[classId].c_str()),
-        //                           confidence);
-        // putText(frame, label, Point(0, 40), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));
+        std::string label = format("Inference time: %.2f ms", t);
+        putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));
 
-        // imshow(kWinName, frame);
+        // Print predicted class.
+        label = format("%s: %.4f", (classes.empty() ? format("Class #%d", classId).c_str() :
+                                                      classes[classId].c_str()),
+                                   confidence);
+        putText(frame, label, Point(0, 40), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));
+
+        imshow(kWinName, frame);
     }
-	*/
     return 0;
 }
